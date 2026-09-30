@@ -3,4 +3,4 @@ jdk:
 before_install:
   - ./gradlew clean
 install:
-  - ./gradlew build -x test
+  - ./gradlew build publishToMavenLocal -x test
