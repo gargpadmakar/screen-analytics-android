@@ -324,79 +324,69 @@ fun DashboardScreen() {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            OutlinedButton(onClick = {
-                coroutineScope.launch {
-                    val db = AnalyticsDatabase.getDatabase(context.applicationContext)
-                    db.analyticsDao().clearAllEvents()
-                    totalEvents = 0
-                    stats = emptyList()
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    coroutineScope.launch {
+                        val db = AnalyticsDatabase.getDatabase(context.applicationContext)
+                        db.analyticsDao().clearAllEvents()
+                        totalEvents = 0
+                        stats = emptyList()
+                    }
                 }
-            }) {
+            ) {
                 Text("Clear DB")
             }
             
-            Button(onClick = {
-                coroutineScope.launch {
-                    try {
-                        val db = AnalyticsDatabase.getDatabase(context.applicationContext)
-                        // Collect the first emission of the Flow
-                        val rawEvents = db.analyticsDao().getAllEvents().first()
-                        
-                        // Convert Storage Entities to Core Models for the ExportManager
-                        val coreEvents = rawEvents.map { entity ->
-                            com.example.screenanalytics.core.ScreenEvent(
-                                eventId = entity.eventId,
-                                screenName = entity.screenName,
-                                timestamp = entity.timestamp,
-                                sessionId = entity.sessionId,
-                                durationMillis = entity.durationMillis
-                            )
-                        }
-                        
-                        // Generate CSV
-                        val csvData = AnalyticsExportManager.exportCsv(coreEvents)
-                        
-                        // Print to Logcat for developer to see
-                        println("==== EXPORTED CSV DATA ====\n$csvData\n===========================")
-                        
-                        // Save to actual file on the device
-                        val downloadsDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
-                        val file = java.io.File(downloadsDir, "analytics_export_${System.currentTimeMillis()}.csv")
-                        file.writeText(csvData)
-                        
-                        // Create URI using FileProvider
-                        val uri = androidx.core.content.FileProvider.getUriForFile(
-                            context,
-                            "com.example.samplecomposeapp.fileprovider",
-                            file
-                        )
-
-                        // Create intent to open the CSV file
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                            setDataAndType(uri, "text/csv")
-                            flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        }
-                        
-                        // Show success message and launch intent
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            android.widget.Toast.makeText(context, "File generated! Opening...", android.widget.Toast.LENGTH_SHORT).show()
-                            try {
-                                context.startActivity(android.content.Intent.createChooser(intent, "Open CSV with..."))
-                            } catch (e: Exception) {
-                                // Fallback if no app can open CSV
-                                android.widget.Toast.makeText(context, "Saved to: ${file.absolutePath}", android.widget.Toast.LENGTH_LONG).show()
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val db = AnalyticsDatabase.getDatabase(context.applicationContext)
+                            val rawEvents = db.analyticsDao().getAllEvents().first()
+                            val coreEvents = rawEvents.map { entity ->
+                                com.example.screenanalytics.core.ScreenEvent(
+                                    eventId = entity.eventId,
+                                    screenName = entity.screenName,
+                                    timestamp = entity.timestamp,
+                                    sessionId = entity.sessionId,
+                                    durationMillis = entity.durationMillis
+                                )
                             }
+                            val csvData = AnalyticsExportManager.exportCsv(coreEvents)
+                            println("==== EXPORTED CSV DATA ====\n$csvData\n===========================")
+                            val downloadsDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
+                            val file = java.io.File(downloadsDir, "analytics_export_${System.currentTimeMillis()}.csv")
+                            file.writeText(csvData)
+                            val uri = androidx.core.content.FileProvider.getUriForFile(context, "com.example.samplecomposeapp.fileprovider", file)
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                setDataAndType(uri, "text/csv")
+                                flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            }
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                android.widget.Toast.makeText(context, "File generated! Opening...", android.widget.Toast.LENGTH_SHORT).show()
+                                try {
+                                    context.startActivity(android.content.Intent.createChooser(intent, "Open CSV with..."))
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(context, "Saved to: ${file.absolutePath}", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
-            }) {
-                Text("Export as CSV")
+            ) {
+                Text("Export CSV")
             }
-            
-            Button(onClick = {
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
                 coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                     val db = AnalyticsDatabase.getDatabase(context.applicationContext)
                     val repo = AnalyticsRepositoryImpl(db)
@@ -408,9 +398,9 @@ fun DashboardScreen() {
                         durationMillis = 4000L
                     ))
                 }
-            }) {
-                Text("Inject Dummy Event")
             }
+        ) {
+            Text("Inject Dummy Event")
         }
         
         Spacer(modifier = Modifier.height(16.dp))
