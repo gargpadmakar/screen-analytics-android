@@ -193,3 +193,11 @@ This SDK is strictly designed for modern privacy requirements:
 * **No Permissions Needed:** Doesn't require `INTERNET`, `ACCESS_FINE_LOCATION`, etc.
 * **No PII Collection:** Will never collect Contacts, Phone Numbers, or exact coordinates.
 * **Route Anonymization:** Standardizes dynamic routes preventing database injection of private identifiers.
+
+---
+
+## Support
+
+If this SDK saved you time, consider buying me a coffee to support my open-source work!
+
+<a href="https://buymeacoffee.com/padmakargarg" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
