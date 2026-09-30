@@ -1,4 +1,4 @@
-#Wed Sep 30 15:05:02 IST 2026
+#Wed Sep 30 15:07:37 IST 2026
 base.0=C\:\\Users\\Dell\\AndroidStudioProjects\\ScreenAnalytics\\sample-compose-app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\Users\\Dell\\AndroidStudioProjects\\ScreenAnalytics\\sample-compose-app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\2\\classes.dex
 base.2=C\:\\Users\\Dell\\AndroidStudioProjects\\ScreenAnalytics\\sample-compose-app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\5\\classes.dex

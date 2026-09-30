@@ -296,10 +296,35 @@ fun DashboardScreen() {
             
             Button(onClick = {
                 coroutineScope.launch {
-                    val db = AnalyticsDatabase.getDatabase(context.applicationContext)
-                    val rawEvents = db.analyticsDao().getAllEvents()
-                    // In a real app we'd collect the Flow. Here we'll just demonstrate the export manager
-                    println("Analytics exported successfully") 
+                    try {
+                        val db = AnalyticsDatabase.getDatabase(context.applicationContext)
+                        // Collect the first emission of the Flow
+                        val rawEvents = kotlinx.coroutines.flow.first(db.analyticsDao().getAllEvents())
+                        
+                        // Convert Storage Entities to Core Models for the ExportManager
+                        val coreEvents = rawEvents.map { entity ->
+                            com.example.screenanalytics.core.ScreenEvent(
+                                eventId = entity.eventId,
+                                screenName = entity.screenName,
+                                timestamp = entity.timestamp,
+                                sessionId = entity.sessionId,
+                                durationMillis = entity.durationMillis
+                            )
+                        }
+                        
+                        // Generate CSV
+                        val csvData = AnalyticsExportManager.exportCsv(coreEvents)
+                        
+                        // Print to Logcat for developer to see
+                        println("==== EXPORTED CSV DATA ====\n$csvData\n===========================")
+                        
+                        // Show success message
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(context, "CSV Exported to Logcat! (${coreEvents.size} records)", android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }) {
                 Text("Export as CSV")
