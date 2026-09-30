@@ -17,7 +17,7 @@ object ScreenAnalyticsCompose {
             }
 
             // Start tracking new screen
-            val newScreenName = destination.route ?: destination.displayName
+            val newScreenName = destination.route ?: "UnknownScreen"
             currentScreenName = newScreenName
             durationTracker.start()
         }
