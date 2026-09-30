@@ -23,6 +23,7 @@ android {
 
 dependencies {
     implementation(project(":screen-analytics-core"))
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 }
