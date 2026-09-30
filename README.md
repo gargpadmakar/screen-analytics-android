@@ -201,9 +201,13 @@ This repository contains two fully working sample applications so you can see th
 1. **`sample-compose-app`**: A beautiful, premium light-themed Jetpack Compose app featuring a bottom navigation bar, dynamic nested routes (`product_detail/123`), and a real-time developer dashboard that automatically updates as you navigate. It also demonstrates how to export SQLite data to a CSV file.
 2. **`sample-xml-app`**: A classic XML-based application demonstrating how `Application.ActivityLifecycleCallbacks` can magically track all Activities (`MainActivity`, `DetailActivity`) with zero boilerplate.
 
-### 📸 Screenshots
+### 📸 Screenshots & Wireframes
 
-![Live Compose Dashboard](assets/screenshots/compose_dashboard.png)
+**App Wireframes:**
+![App Wireframes](./assets/screenshots/app_wireframes.jpg)
+
+**Live Compose Dashboard:**
+![Live Compose Dashboard](./assets/screenshots/compose_dashboard_mockup.jpg)
 
 ---
 
