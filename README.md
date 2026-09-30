@@ -202,10 +202,8 @@ This repository contains two fully working sample applications so you can see th
 2. **`sample-xml-app`**: A classic XML-based application demonstrating how `Application.ActivityLifecycleCallbacks` can magically track all Activities (`MainActivity`, `DetailActivity`) with zero boilerplate.
 
 ### 📸 Screenshots
-<div align="center">
-  <img src="https://via.placeholder.com/250x500.png?text=Home+Screen" width="250" />
-  <img src="https://via.placeholder.com/250x500.png?text=Live+Dashboard" width="250" />
-</div>
+
+![Live Compose Dashboard](assets/screenshots/compose_dashboard.png)
 
 ---
 
