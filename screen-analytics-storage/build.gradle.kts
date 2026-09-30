@@ -38,7 +38,7 @@ dependencies {
 plugins.apply("maven-publish")
 
 afterEvaluate {
-    publishing {
+    extensions.configure<PublishingExtension>("publishing") {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
