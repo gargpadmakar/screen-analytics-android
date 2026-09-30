@@ -395,6 +395,22 @@ fun DashboardScreen() {
             }) {
                 Text("Export as CSV")
             }
+            
+            Button(onClick = {
+                coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    val db = AnalyticsDatabase.getDatabase(context.applicationContext)
+                    val repo = AnalyticsRepositoryImpl(db)
+                    repo.saveEvent(com.example.screenanalytics.core.ScreenEvent(
+                        eventId = java.util.UUID.randomUUID().toString(),
+                        screenName = "Manual_Compose_Event",
+                        timestamp = System.currentTimeMillis(),
+                        sessionId = "TestSession",
+                        durationMillis = 4000L
+                    ))
+                }
+            }) {
+                Text("Inject Dummy Event")
+            }
         }
         
         Spacer(modifier = Modifier.height(16.dp))
