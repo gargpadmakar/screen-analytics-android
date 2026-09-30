@@ -194,6 +194,19 @@ This SDK is strictly designed for modern privacy requirements:
 * **No PII Collection:** Will never collect Contacts, Phone Numbers, or exact coordinates.
 * **Route Anonymization:** Standardizes dynamic routes preventing database injection of private identifiers.
 
+## 📱 Sample Apps
+
+This repository contains two fully working sample applications so you can see the SDK in action:
+
+1. **`sample-compose-app`**: A beautiful, premium light-themed Jetpack Compose app featuring a bottom navigation bar, dynamic nested routes (`product_detail/123`), and a real-time developer dashboard that automatically updates as you navigate. It also demonstrates how to export SQLite data to a CSV file.
+2. **`sample-xml-app`**: A classic XML-based application demonstrating how `Application.ActivityLifecycleCallbacks` can magically track all Activities (`MainActivity`, `DetailActivity`) with zero boilerplate.
+
+### 📸 Screenshots
+<div align="center">
+  <img src="https://via.placeholder.com/250x500.png?text=Home+Screen" width="250" />
+  <img src="https://via.placeholder.com/250x500.png?text=Live+Dashboard" width="250" />
+</div>
+
 ---
 
 ## Support

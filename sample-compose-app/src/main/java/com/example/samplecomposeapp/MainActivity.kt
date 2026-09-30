@@ -32,6 +32,7 @@ import com.example.screenanalytics.storage.AnalyticsDatabase
 import com.example.screenanalytics.storage.AnalyticsRepositoryImpl
 import com.example.screenanalytics.storage.ScreenStatisticsData
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -74,7 +75,7 @@ fun MainScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Analytics Premium Demo", fontWeight = FontWeight.Bold) },
+                title = { Text("Screen Analytics Demo", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White
@@ -151,14 +152,55 @@ fun HomeScreen(navController: NavController) {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        PremiumCard("Welcome to Zero-Code Analytics", "Navigate around using the bottom bar. Every click and screen view is being tracked silently in the background!")
+        InfoCard("Welcome to Zero-Code Analytics", "Navigate around using the bottom bar. Every click and screen view is being tracked silently in the background!")
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { navController.navigate("product_detail/123") },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("View Featured Product (Test Dynamic Route)")
+            Text("View Featured Product (Test Dynamic Route)", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        Text("Weekly Usage Trends", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(modifier = Modifier.height(16.dp))
+        SampleGraph()
+    }
+}
+
+@Composable
+fun SampleGraph() {
+    Card(
+        modifier = Modifier.fillMaxWidth().height(200.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            val heights = listOf(0.4f, 0.7f, 0.5f, 0.9f, 0.6f, 0.8f, 1.0f)
+            val days = listOf("M", "T", "W", "T", "F", "S", "S")
+            
+            heights.forEachIndexed { index, heightFactor ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, 
+                    modifier = Modifier.fillMaxHeight(), 
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(24.dp)
+                            .fillMaxHeight(heightFactor)
+                            .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = if (index == 6) 1f else 0.6f))
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(days[index], style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                }
+            }
         }
     }
 }
@@ -215,14 +257,14 @@ fun ProfileScreen(navController: NavController) {
 @Composable
 fun SettingsScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        PremiumCard("Settings", "This is a deeply nested screen. Let's see if the SDK records the time spent here.")
+        InfoCard("Settings", "This is a deeply nested screen. Let's see if the SDK records the time spent here.")
     }
 }
 
 @Composable
 fun ProductDetailScreen(productId: String, navController: NavController) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        PremiumCard("Product Details", "You are viewing product #$productId. Notice how the SDK sanitizes this dynamic route in the dashboard!")
+        InfoCard("Product Details", "You are viewing product #$productId. Notice how the SDK sanitizes this dynamic route in the dashboard!")
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { navController.popBackStack() }) {
             Text("Go Back")
@@ -231,7 +273,7 @@ fun ProductDetailScreen(productId: String, navController: NavController) {
 }
 
 @Composable
-fun PremiumCard(title: String, description: String) {
+fun InfoCard(title: String, description: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -299,7 +341,7 @@ fun DashboardScreen() {
                     try {
                         val db = AnalyticsDatabase.getDatabase(context.applicationContext)
                         // Collect the first emission of the Flow
-                        val rawEvents = kotlinx.coroutines.flow.first(db.analyticsDao().getAllEvents())
+                        val rawEvents = db.analyticsDao().getAllEvents().first()
                         
                         // Convert Storage Entities to Core Models for the ExportManager
                         val coreEvents = rawEvents.map { entity ->
@@ -318,9 +360,33 @@ fun DashboardScreen() {
                         // Print to Logcat for developer to see
                         println("==== EXPORTED CSV DATA ====\n$csvData\n===========================")
                         
-                        // Show success message
+                        // Save to actual file on the device
+                        val downloadsDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
+                        val file = java.io.File(downloadsDir, "analytics_export_${System.currentTimeMillis()}.csv")
+                        file.writeText(csvData)
+                        
+                        // Create URI using FileProvider
+                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                            context,
+                            "com.example.samplecomposeapp.fileprovider",
+                            file
+                        )
+
+                        // Create intent to open the CSV file
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "text/csv")
+                            flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        }
+                        
+                        // Show success message and launch intent
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            android.widget.Toast.makeText(context, "CSV Exported to Logcat! (${coreEvents.size} records)", android.widget.Toast.LENGTH_LONG).show()
+                            android.widget.Toast.makeText(context, "File generated! Opening...", android.widget.Toast.LENGTH_SHORT).show()
+                            try {
+                                context.startActivity(android.content.Intent.createChooser(intent, "Open CSV with..."))
+                            } catch (e: Exception) {
+                                // Fallback if no app can open CSV
+                                android.widget.Toast.makeText(context, "Saved to: ${file.absolutePath}", android.widget.Toast.LENGTH_LONG).show()
+                            }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
