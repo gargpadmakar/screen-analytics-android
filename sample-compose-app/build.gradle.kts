@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.samplecomposeapp"
+        applicationId = "com.gargpadmakar.screenanalytics.sample"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
