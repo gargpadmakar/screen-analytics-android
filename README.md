@@ -1,18 +1,60 @@
 # Screen Analytics SDK
 
-![Maven Central](https://img.shields.io/badge/Maven%20Central-v1.0.5-blue.svg)
+![Maven Central](https://img.shields.io/badge/Maven%20Central-v1.0.6-blue.svg)
 ![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)
 ![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
 
 An enterprise-grade, **zero-boilerplate**, offline-first screen analytics SDK for modern Android applications. 
 
-Designed for both **Jetpack Compose** and **Legacy XML (Activities/Fragments)**, this SDK automatically tracks user journeys without polluting your UI code with analytics calls.
+---
+
+## What is the use of this SDK?
+
+When building Android applications, product managers and developers need to know:
+1. Which screens are users visiting the most?
+2. How much time (duration) are users spending on a specific screen?
+3. What does the user journey (screen flow) look like?
+
+**The Problem:** Normally, developers have to manually write `analytics.trackScreen("Home")` inside every single Activity, Fragment, and Jetpack Compose screen. This creates massive code duplication, pollutes the UI logic, and makes the codebase hard to maintain.
+
+**The Solution:** This SDK automatically tracks user journeys **without polluting your UI code with analytics calls**. You initialize it once at the Application level, and it automatically intercepts Android Lifecycle events and Jetpack Compose navigation events to track screens, calculate durations, and manage sessions entirely offline in a local SQLite database.
 
 ---
 
-## The Promise
-> **Zero screen-level analytics boilerplate.**
-> Integrate once at the Application/Navigation level. The SDK automatically detects screen transitions, resolves duplicate events, sanitizes routes, calculates screen duration, manages sessions, and persists everything locally using Room SQLite—all entirely offline.
+## How it works (Architecture)
+
+The SDK acts as a centralized engine that listens to your app's natural navigation. It standardizes the data and saves it securely.
+
+```mermaid
+graph TD
+    %% User Interfaces
+    subgraph UI Layer
+        A[Legacy XML App] -->|Activity Lifecycle| B[Fragment Lifecycle]
+        C[Modern Compose App] -->|NavHost Transitions| D[Compose NavController]
+    end
+
+    %% SDK Core Engine
+    subgraph SDK Core Layer
+        B --> E{SDK Analytics Engine}
+        D --> E
+        
+        E -->|1. Route string| F[Route Sanitizer]
+        F -->|Removes PII e.g. /user/123 -> /user| G[Deduplication Manager]
+        G -->|Filters double-triggers| H[Duration Tracker]
+        H -->|Calculates time spent| I[Session Manager]
+    end
+
+    %% Storage Layer
+    subgraph Offline Storage
+        I -->|Generates Event| J[(Room SQLite Database)]
+        J --> K[Local Statistics Query]
+        J --> L[CSV / JSON Export]
+    end
+
+    style UI Layer fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style SDK Core Layer fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    style Offline Storage fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+```
 
 ---
 
@@ -35,23 +77,21 @@ Add the dependencies in your app's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    // Core Engine (Required)
-    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-core:1.0.5")
-    
-    // SQLite Storage (Required)
-    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-storage:1.0.5")
+    // Core Engine & Storage (Required)
+    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-core:1.0.6")
+    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-storage:1.0.6")
 
     // Legacy XML Support (Activities/Fragments)
-    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-android:1.0.5")
+    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-android:1.0.6")
 
     // Jetpack Compose Support (Navigation Compose)
-    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-compose:1.0.5")
+    implementation("com.github.gargpadmakar.screen-analytics-android:screen-analytics-compose:1.0.6")
 }
 ```
 
 ---
 
-## Quick Start
+## Quick Start Guide
 
 ### 1. Global Initialization
 Initialize the Core SDK inside your `Application` class.
@@ -120,31 +160,9 @@ class MyApplication : Application() {
 
 ---
 
-## Architecture
+## Deep Dive: Local Analytics Engine & Export
 
-The SDK uses a clean, offline-first architecture decoupled from any specific transport mechanism (e.g., Firebase, REST).
-
-```mermaid
-graph TD
-    A[App Navigation/UI] -->|Navigation Event| B(Compose / XML Integrations)
-    B -->|Raw Route| C{Route Sanitizer}
-    C -->|Sanitized Name| D{Deduplication Engine}
-    D -->|Valid Screen View| E(Duration Tracker)
-    E --> F[Session Manager]
-    F -->|Screen Event Payload| G[(Room SQLite Database)]
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style G fill:#bbf,stroke:#333,stroke-width:2px
-```
-
-### Route Sanitization & Deduplication
-If your Compose app routes to `profile/{userId}?tab=settings`, the SDK's **Route Sanitizer** intercepts it, preventing PII leaks and normalizing the data before it hits the database. Concurrently, the **Deduplication Engine** prevents double-logging if an Activity and a Fragment recreate rapidly on a configuration change.
-
----
-
-## Local Analytics Engine & Export
-
-The SDK aggregates data completely offline using raw SQLite speed. You can easily query statistics to build local developer dashboards or export reports to CSV/JSON.
+Because this SDK is offline-first, you can aggregate data completely offline using raw SQLite speed. You can easily query statistics to build local developer dashboards or export reports to CSV/JSON.
 
 ```kotlin
 import com.example.screenanalytics.core.ScreenAnalyticsCore
@@ -175,10 +193,3 @@ This SDK is strictly designed for modern privacy requirements:
 * **No Permissions Needed:** Doesn't require `INTERNET`, `ACCESS_FINE_LOCATION`, etc.
 * **No PII Collection:** Will never collect Contacts, Phone Numbers, or exact coordinates.
 * **Route Anonymization:** Standardizes dynamic routes preventing database injection of private identifiers.
-
-## Contributing
-1. Fork it
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
