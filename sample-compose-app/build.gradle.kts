@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.samplecomposeapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.samplecomposeapp"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
@@ -49,4 +49,8 @@ dependencies {
     
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.5")
+    
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 }
